@@ -1,7 +1,8 @@
 import React from "react";
 import logo from "../assets/logo.png";
-import {signOut} from 'firebase/auth'
-import {auth} from '../firebase/firebase'
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { NavLink } from "react-router-dom";
 import {
   RiArrowDownSFill,
   RiBardLine,
@@ -13,14 +14,23 @@ import {
 } from "react-icons/ri";
 
 const NavLinks = () => {
-  const handleLogout = async () =>{
-    try{
-      await signOut(auth)
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.log(error);
     }
-    catch(error){
-      console.log(error)
-    }
-  }
+  };
+
+  const getNavLinkClass = ({ isActive }) =>
+    `flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
+     transition-all duration-200
+     ${
+       isActive
+         ? "text-sky-400 bg-linear-to-r from-sky-500/10 to-indigo-500/10 border-b-2 lg:border-b-0 lg:border-l-2 border-sky-400"
+         : "text-slate-400 hover:text-sky-400 hover:bg-slate-700/50"
+     }`;
+
   return (
     <section
       className="sticky lg:static top-0 z-50
@@ -41,57 +51,28 @@ const NavLinks = () => {
 
         <ul className="flex flex-row items-center justify-around lg:justify-center lg:flex-col lg:space-y-4 lg:grow lg:mt-6">
           <li>
-            <button
-              className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
-                               text-sky-400 
-                               bg-linear-to-r from-sky-500/10 to-indigo-500/10
-                               border-b-2 lg:border-b-0 lg:border-l-2 border-sky-400
-                               transition-all duration-200"
-            >
+            <NavLink to="/" className={getNavLinkClass}>
               <RiChatHeartLine className="w-6 h-6 lg:w-7 lg:h-7" />
-            </button>
+            </NavLink>
           </li>
-
           <li>
-            <button
-              className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
-                               text-slate-400
-                               hover:text-sky-400 hover:bg-slate-700/50
-                               transition-all duration-200"
-            >
+            <NavLink to="/profile" className={getNavLinkClass}>
               <RiFolderUserLine className="w-6 h-6 lg:w-7 lg:h-7" />
-            </button>
+            </NavLink>
           </li>
 
           <li>
-            <button
-              className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
-                               text-slate-400
-                               hover:text-sky-400 hover:bg-slate-700/50
-                               transition-all duration-200"
-            >
+            <button className={getNavLinkClass({ isActive: false })}>
               <RiNotificationLine className="w-6 h-6 lg:w-7 lg:h-7" />
             </button>
           </li>
-
           <li className="hidden lg:block">
-            <button
-              className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
-                               text-slate-400
-                               hover:text-sky-400 hover:bg-slate-700/50
-                               transition-all duration-200"
-            >
+            <button className={getNavLinkClass({ isActive: false })}>
               <RiFile4Line className="w-6 h-6 lg:w-7 lg:h-7" />
             </button>
           </li>
-
           <li className="hidden lg:block">
-            <button
-              className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-14 rounded-lg
-                               text-slate-400
-                               hover:text-sky-400 hover:bg-slate-700/50
-                               transition-all duration-200"
-            >
+            <button className={getNavLinkClass({ isActive: false })}>
               <RiBardLine className="w-6 h-6 lg:w-7 lg:h-7" />
             </button>
           </li>

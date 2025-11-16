@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { FaUserPlus } from "react-icons/fa";
 
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, db } from "../firebase/firebase";
+import { auth, db, isUsernameUnique } from "../firebase/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
 const Register = ({ isLoggedin, setIsLoggedin }) => {
   const [userData, setUserData] = useState({
     fullName: "",
+    username: "",
     email: "",
     password: "",
   });
@@ -24,26 +25,43 @@ const Register = ({ isLoggedin, setIsLoggedin }) => {
 
   const handleAuth = async () => {
     setIsLoading(true);
+    const { fullName, username, email, password } = userData;
+
+    if (!fullName || !username || !email || !password) {
+      alert("Please fill out all fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    const formattedUsername = username.trim().toLowerCase();
+
     try {
+      const isUnique = await isUsernameUnique(formattedUsername);
+      if (!isUnique) {
+        alert("this username is already taken. Please choose another one");
+        setIsLoading(false);
+        return;
+      }
+
       const userCredentials = await createUserWithEmailAndPassword(
         auth,
-        userData?.email,
-        userData?.password
+        email,
+        password
       );
+
       const user = userCredentials.user;
 
       const userDocRef = doc(db, "user", user.uid);
-
       await setDoc(userDocRef, {
         uid: user.uid,
         email: user.email,
-        username: user.email.split("@")[0],
-        fullName: userData.fullName,
+        username: formattedUsername,
+        fullName: fullName.trim(),
         image: "",
       });
     } catch (err) {
       console.log("Registration error:", err);
-      alert(err.message)
+      alert(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -72,6 +90,16 @@ const Register = ({ isLoggedin, setIsLoggedin }) => {
                        focus:border-sky-400 focus:ring-2 focus:ring-sky-400/50 
                        transition-all duration-300"
             placeholder="Full Name"
+          />
+          <input
+            type="text"
+            name="username"
+            onChange={handleChange}
+            className="w-full p-2.5 rounded-md bg-slate-900/70 text-slate-200 placeholder:text-slate-500 
+                       border border-slate-700 shadow-inner shadow-black/20 outline-none 
+                       focus:border-sky-400 focus:ring-2 focus:ring-sky-400/50 
+                       transition-all duration-300"
+            placeholder="Username (must be unique)"
           />
           <input
             type="email"
@@ -104,7 +132,7 @@ const Register = ({ isLoggedin, setIsLoggedin }) => {
                        hover:shadow-xl hover:shadow-sky-500/30 hover:scale-[1.02] 
                        transition-all duration-300 ease-in-out"
             disabled={isLoading}
-          > 
+          >
             {isLoading ? (
               <>
                 <span>processing...</span>

@@ -7,13 +7,15 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
   onSnapshot,
   serverTimestamp,
   setDoc,
   updateDoc,
   query,
-  orderBy
+  orderBy,
+  where,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -30,6 +32,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const db = getFirestore(app);
+
+export const isUsernameUnique = async (username, currentUserId = null) => {
+  const formattedUsername = username.trim().toLowerCase();
+  const q = query(collection(db, "user"), where("username", "==", formattedUsername))
+  const querySnapshot = await getDocs(q)
+  if (querySnapshot.empty){
+    return true;
+  }
+
+  if (!currentUserId) {
+    return false;
+  }
+
+  const docId = querySnapshot.docs[0].id;
+  return docId === currentUserId;
+}
 
 export const listenForChats = (setChats) => {
   if (!auth.currentUser) {
@@ -59,15 +77,12 @@ export const sendMessage = async (messageText, chatId, user1, user2) => {
 
   if (!user1Doc.exists()) {
     console.error("Could not find user data for current user:", user1);
-    return; // Stop the function
+    return; 
   }
   if (!user2Doc.exists()) {
     console.error("Could not find user data for selected user:", user2);
-    return; // Stop the function
+    return; 
   }
-
-  console.log(user1Doc);
-  console.log(user2Doc);
 
   const user1Data = user1Doc.data();
   const user2Data = user2Doc.data();
@@ -81,6 +96,7 @@ export const sendMessage = async (messageText, chatId, user1, user2) => {
     });
   } else {
     await updateDoc(chatsRef, {
+      users: [user1Data, user2Data],
       lastMessage: messageText,
       lastMessageTimestamp: serverTimestamp(),
     });
@@ -101,7 +117,7 @@ export const listenForMessages = (chatId, setMessages) => {
 
   const unsubscribe = onSnapshot(q, (snapshot)=>{
       const messages = snapshot.docs.map((doc)=>({
-        id: doc.uid,
+        id: doc.id,
         ...doc.data(),
       }))
       setMessages(messages)

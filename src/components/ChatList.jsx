@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import defaultAvatar from "../assets/default.jpg";
 import { RiMore2Fill } from "react-icons/ri";
 import SearchModel from "./SearchModel";
-import chatsData from "../data/chats";
 import { formatTimestamp } from "../utils/formatTimestamp";
 import { auth, db, listenForChats } from "../firebase/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -64,7 +63,7 @@ const ChatList = ({setSelectedUser}) => {
       `}</style>
 
       <section
-        className="relative hidden lg:flex flex-col items-start 
+        className="relative lg:flex flex-col items-start 
                    bg-slate-800 h-screen w-full md:w-[360px] lg:w-[400px]
                    border-r border-slate-700/50"
       >
@@ -75,7 +74,7 @@ const ChatList = ({setSelectedUser}) => {
         >
           <main className="flex items-center gap-3">
             <img
-              src={defaultAvatar}
+              src={user?.image || defaultAvatar}
               className="w-11 h-11 object-cover rounded-full ring-2 ring-slate-700"
               alt="User Avatar"
             />
@@ -85,7 +84,7 @@ const ChatList = ({setSelectedUser}) => {
                 {user?.fullName || 'Echoe User'}
               </h3>
               <p className="p-0 font-light text-slate-400 text-[15px] ">
-                @{user?.username || "@echoe"}
+                @{user?.username || "echoe"}
               </p>
             </span>
           </main>
@@ -139,13 +138,6 @@ const ChatList = ({setSelectedUser}) => {
                       
                       <img
                         src={user?.image || defaultAvatar}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = `https://placehold.co/40x40/1e293b/94a3b8?text=${user?.fullName
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}`;
-                        }}
                         className="h-11 w-11 rounded-full object-cover 
                                    ring-2 ring-slate-700"
                         alt={`${user?.fullName} avatar`}

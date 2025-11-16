@@ -1,44 +1,42 @@
 import React, { useState, useEffect } from "react";
-import NavLinks from "./components/NavLinks";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import ChatList from "./components/ChatList";
-import ChatBox from "./components/ChatBox";
-
+import { Routes, Route, Navigate } from "react-router-dom";
 import { auth } from "./firebase/firebase";
 
+import MainLayout from "./pages/MainLayout";
+import AuthPage from "./pages/AuthPage";
+import ChatLayout from "./pages/ChatLayout";
+import Profile from "./components/Profile";
+
 const App = () => {
-  const [isLoggedin, setIsLoggedin] = useState(true);
   const [user, setuser] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      setuser(currentUser);
-    }
-
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setuser(user);
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-slate-900">
+        <p className="text-white">Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      {user ? (
-        <div className="flex flex-col lg:flex-row items-start w-full">
-          <NavLinks />
-          <ChatList setSelectedUser={setSelectedUser}/>
-          <ChatBox selectedUser={selectedUser}/>
-        </div>
-      ) : (
-        <div>
-          {isLoggedin ? <Login isLoggedin={isLoggedin} setIsLoggedin={setIsLoggedin}/> : <Register isLoggedin={isLoggedin} setIsLoggedin={setIsLoggedin}/>}
-        </div>
-      )}
-    </div>
+    <Routes>
+      <Route path="/auth" element={user ? <Navigate to="/" /> : <AuthPage />} />
+      <Route path="/" element={user ? <MainLayout /> : <Navigate to="/auth" />}>
+        <Route index element={<ChatLayout />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 };
 
